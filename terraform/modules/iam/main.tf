@@ -71,3 +71,70 @@ resource "aws_iam_role_policy_attachment" "glue_service_attachment" {
   role       = aws_iam_role.glue_etl_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
+
+
+# ---------------------------------------------------------
+# GitHub Actions OIDC Provider
+# ---------------------------------------------------------
+
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+
+  tags = var.tags
+}
+
+# ---------------------------------------------------------
+# GitHub Actions Trust Policy
+# ---------------------------------------------------------
+
+data "aws_iam_policy_document" "github_actions_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type = "Federated"
+
+      identifiers = [
+        aws_iam_openid_connect_provider.github.arn
+      ]
+    }
+
+    actions = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+
+      values = [
+        "sts.amazonaws.com"
+      ]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+
+      values = [
+        "repo:dhenishaavnbmw@306085990/Dhenishaa-Datalake-Project@1375072784:environment:dev"
+      ]
+    }
+  }
+}
+
+# ---------------------------------------------------------
+# GitHub Actions IAM Role
+# ---------------------------------------------------------
+
+resource "aws_iam_role" "github_actions" {
+  name = "bmw-serverless-data-lake-github-actions"
+
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
+
+  tags = var.tags
+}

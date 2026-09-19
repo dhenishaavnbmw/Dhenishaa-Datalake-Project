@@ -111,8 +111,8 @@ jobs:
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+            role-to-assume: arn:aws:iam::532404260630:role/bmw-serverless-data-lake-github-actions
+            aws-region: us-east-1
 
       
 
