@@ -85,7 +85,7 @@ jobs:
           fi
 
 
-            - name: Decode OIDC token claims
+      - name: Decode OIDC token claims
         shell: bash
         run: |
           set -e
