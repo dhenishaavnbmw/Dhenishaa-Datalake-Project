@@ -84,6 +84,30 @@ jobs:
             exit 1
           fi
 
+
+            - name: Decode OIDC token claims
+        shell: bash
+        run: |
+          set -e
+
+          TOKEN_RESPONSE=$(curl -sS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")
+
+          TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.value')
+
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "ERROR: Failed to retrieve token"
+            exit 1
+          fi
+
+          PAYLOAD=$(echo "$TOKEN" | cut -d '.' -f 2)
+
+          PAYLOAD=$(python -c "import sys,base64; print(base64.urlsafe_b64decode(sys.argv[1] + '=' * (-len(sys.argv[1]) % 4)).decode())" "$PAYLOAD")
+
+          echo "OIDC Claims:"
+          echo "$PAYLOAD" | jq '{iss, aud, sub}'
+
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
