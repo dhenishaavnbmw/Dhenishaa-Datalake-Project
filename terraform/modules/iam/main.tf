@@ -121,7 +121,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:dhenishaavnbmw@306085990/Dhenishaa-Datalake-Project@1375072784:environment:dev"
+        "repo:dhenishaavnbmw/Dhenishaa-Datalake-Project:environment:dev"
       ]
     }
   }
